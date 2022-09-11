@@ -1,25 +1,95 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import Dice from './Dice';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+
+    const [dice, setDice] = React.useState(initSetUp())
+    const [tenzies, setTenzies] = React.useState(false)
+
+    React.useEffect(()=>{
+
+        if(tenzies) {
+            console.log("WIIN")
+        }
+        
+    }, [dice, tenzies])
+
+
+
+    function initSetUp() {
+            const dieData = [];
+            let i;
+            for(i = 0; i < 10; i++) {
+                dieData.push(
+                   {
+                    id: i,
+                    value: generateRandomNumber(),
+                    isLocked: false
+                   }
+                )
+            }
+            return dieData
+    }
+
+
+    function generateRandomNumber() {
+        return Math.ceil(Math.random() * 6)
+    }
+
+
+    function handleToggle(idNumber) {
+        setDice((s)=>{
+            const newArr = s.map((v)=>{
+                if(idNumber === v.id) v.isLocked = v.isLocked ? false : true;
+                return v
+            })
+
+            const testNumber = newArr[0].value;
+            setTenzies(newArr.every((v)=>v.isLocked === true && testNumber === v.value));
+
+            return newArr
+        })
+    }
+
+
+    function handleRoll() {
+        if(!tenzies) {
+            setDice((s)=>{
+                const newArr = s.map(v=>{
+                    if(!v.isLocked) v.value = generateRandomNumber()
+                    return v
+                })
+                return newArr
+            })            
+        } else {
+            setDice(initSetUp());
+            setTenzies(false);
+        }
+    }
+
+    const diceComponents = dice.map((v)=>{
+        return <Dice 
+            key={v.id} 
+            id={v.id} 
+            value={v.value} 
+            isLocked={v.isLocked} 
+            toggle={()=>handleToggle(v.id)}
+        />
+    })
+    
+
+    return (
+        <div className="wrapper">
+            <div className="container">
+                <div className="dice-container">
+                    {diceComponents}
+                </div>
+                <button className="roll-btn" onClick={handleRoll}>{tenzies ? "Reset" : "Roll"}</button>
+                {tenzies && <h2>Congratulations!</h2>}
+            </div>
+        </div>
+        
+    )
 }
 
-export default App;
+export default App
